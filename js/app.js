@@ -18,7 +18,7 @@ class Enemy {
         // which will ensure the game runs at the same speed for
         // all computers.
         this.x = (this.x + dt * this.speed * 100) % (500);
-        // if enemy dissapears on the right edge than reset it
+        // if enemy dissapears on the right edge then reset it (new random row position and speed)
         if(this.x >= 450) {
             this.x = -100;
             this.y = [60,145,230][Math.floor(Math.random() * 3)];
@@ -45,6 +45,11 @@ class Enemy {
 // This class requires an update(), render() and
 // a handleInput() method.
 class Player{
+    /**
+     * @description Contruct the player object and set its initial position
+     * @param {number} x Initial x position
+     * @param {number} y Initial y position
+    */ 
     constructor(x, y) {
         this.sprite = 'images/char-pink-girl.png';
         this.x = x;
@@ -58,28 +63,46 @@ class Player{
 
     render() {
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+        if (this.won === true) {
+            ctx.font = '72px Arial';
+            ctx.fillText('You won!', 100, 300);
+            ctx.font = '36px Arial';
+            ctx.fillText('Press ENTER for new game.',30, 400);
+        }
     }
-
+    
+    // move the player according to pressed control keys
     handleInput (move) {
         let xDelta = 101;
         let yDelta = 83;
-        if (move === 'left') {
+        if (move === 'enter' && this.won === true) {
+            for(const enemy of allEnemies) {
+                        enemy.speed = Math.round(Math.random() * 2) + 1;;
+            }
+            this.won = false;
+        }
+        if (move === 'left' && this.won === false) {
             this.x -= this.x >= xDelta ? xDelta : 0;
         }
-        if (move === 'right'){
+        if (move === 'right' && this.won === false){
             this.x += this.x < 4 * xDelta ? 101 : 0;
         }
-        if (move === 'down') {
+        if (move === 'down' && this.won === false) {
             this.y += this.y < 5 * 80 ? yDelta : 0; 
         }
-        if (move === 'up') {
+        if (move === 'up' && this.won === false) {
             if (this.y >= yDelta) {
                 this.y -= yDelta
             } else {
-                // game won
-                //document.querySelector('.wrap-hide').classList.remove('wrap-hide');
-                this.reset();
-                //document.querySelector('canvas').style.display = 'none';
+                // game won - the player has reached the water
+                setTimeout(() => {
+                    this.reset();
+                    for(const enemy of allEnemies) {
+                        enemy.speed = 0;
+                    }    
+                    this.won = true;     
+                    this.render();
+                }, 100)
             }
         }
     }
@@ -93,10 +116,10 @@ class Player{
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // If you wold like to make the game more difficult, than increase 
-// the difficultLevel (how many enemies are in the same time on the gameboard)
+// the `difficultyLevel` (how many enemies are in the same time on the gameboard)
 const allEnemies = [];
-const difficultLevel = 2;
-for(let i = 0; i < difficultLevel; i++) {
+const difficultyLevel = 2;
+for(let i = 0; i < difficultyLevel; i++) {
     allEnemies[i] = new Enemy(1, 1);
 }
 
@@ -107,6 +130,7 @@ const player = new Player(2 * 101, 5 * 80);
 // Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function(e) {
     var allowedKeys = {
+        13: 'enter',
         37: 'left',
         38: 'up',
         39: 'right',
