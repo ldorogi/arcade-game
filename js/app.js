@@ -1,10 +1,16 @@
 // Enemies our player must avoid
 class Enemy {
+    /**
+     * @description Construct an enemy object and set its initial position and speed
+     * @param {number} x Initial x position
+     * @param {number} y Initial y position
+    */ 
     constructor(x, y) {
         // The image/sprite for our enemies, this uses
         // a helper we've provided to easily load images
         this.sprite = 'images/enemy-bug.png';
         this.speed = Math.round(Math.random() * 2) + 1;
+        // enemy starts off the screen
         setTimeout(()=> {
             this.x = -100;
             this.y = [60,145,230][Math.floor(Math.random() * 3)];
@@ -60,7 +66,9 @@ class Player{
     update() {
 
     }
-
+    
+    // Draw the player on the screen, required method for game
+    // If the game is won stop all movements and give a message on the gameboard
     render() {
         ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
         if (this.won === true) {
@@ -75,12 +83,14 @@ class Player{
     handleInput (move) {
         let xDelta = 101;
         let yDelta = 83;
+        // We check ENTER only if the game is won, with ENTER is possible to restart the game
         if (move === 'enter' && this.won === true) {
             for(const enemy of allEnemies) {
                         enemy.speed = Math.round(Math.random() * 2) + 1;;
             }
             this.won = false;
         }
+        // wenn the game is won until ENTER is pressed all other direction keys are not sensitive
         if (move === 'left' && this.won === false) {
             this.x -= this.x >= xDelta ? xDelta : 0;
         }
@@ -95,6 +105,7 @@ class Player{
                 this.y -= yDelta
             } else {
                 // game won - the player has reached the water
+                // we stop all movements
                 setTimeout(() => {
                     this.reset();
                     for(const enemy of allEnemies) {
